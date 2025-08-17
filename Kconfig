@@ -1,0 +1,36 @@
+menu "Xiaozhi chat"
+
+config XZ_CHAT_VERSION_CHECK_URL
+    string "Default OTA URL"
+    default "https://api.tenclass.net/xiaozhi/ota/"
+    help
+        The application will access this URL to check for new firmwares and server address.
+
+config XZ_CHAT_ACTIVATION_CHECK_URL
+    string "Default OTA URL"
+    default "https://api.tenclass.net/xiaozhi/ota/activate"
+    help
+        The application will access this URL to check if device is activated.
+
+config XZ_BOARD_TYPE_CUSTOM
+    bool "Custom board type"
+    default n
+
+config XZ_BOARD_TYPE_CUSTOM_NAME
+    depends on XZ_BOARD_TYPE_CUSTOM
+    string "Board type custom name to be send to server" 
+
+config XZ_CONTINUOUSLY_DIGEST_AUDIO_INPUT
+    bool "Continuously read audio input even when the server is not listening."
+    default n
+    help
+        This is helpful if audio input is processed in a fifo pipeline, old frames must be popped out so that new frames can go through VAD or wake net.
+    
+config XZ_NVS_PART_NAME_TO_SAVE_BOARD_INFO
+    string "NVS partition name to save board registration info"
+    default "nvs"
+    help
+        the partition must be initialized before xz_chat calls init. after xz_chat_init returns, you can safely deinit the partition.
+
+endmenu
+
