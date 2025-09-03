@@ -22,7 +22,7 @@ config XZ_BOARD_TYPE_CUSTOM_NAME
 
 config XZ_CONTINUOUSLY_DIGEST_AUDIO_INPUT
     bool "Continuously read audio input even when the server is not listening."
-    default n
+    default y
     help
         This is helpful if audio input is processed in a fifo pipeline, old frames must be popped out so that new frames can go through VAD or wake net.
     

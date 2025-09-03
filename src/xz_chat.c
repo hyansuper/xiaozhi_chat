@@ -431,7 +431,7 @@ static esp_err_t _stop_tts(xz_chat_t* chat) {
 }
 
 static esp_err_t _process_mcp(xz_chat_t* chat, char* buf, int len) {
-
+    // todo: process the string in buf and invoke responding mcp function
     free(buf);
     return ESP_OK;
 }
@@ -495,11 +495,3 @@ void xz_chat_stop_manual_listening(xz_chat_t* chat) {
     CMD(chat, _stop_manual_listening, chat);
 }
 
-
-bool xz_chat_is_listening(xz_chat_t* chat) {
-    return chat_has_any_flag(chat, XZ_FLAG_SESS_LISTENING);
-}
-
-bool xz_chat_is_speaking(xz_chat_t* chat) {
-    return chat_has_any_flag(chat, XZ_FLAG_SESS_SPEAKING);
-}

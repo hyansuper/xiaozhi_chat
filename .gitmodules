@@ -1,0 +1,3 @@
+[submodule "example/components/my_esp_util"]
+	path = example/components/my_esp_util
+	url = https://github.com/hyansuper/my_esp_util/
