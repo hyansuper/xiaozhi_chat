@@ -54,7 +54,7 @@ static recorder_t recorder;
 static playback_t playback;
 static xz_chat_t* chat;
 
-static esp_err_t audio_prompt_play(audio_prompt_t* prompt, const char *url);
+static esp_err_t audio_prompt_play_to_end(audio_prompt_t* prompt, const char *url);
 
 static void xz_chat_on_event(xz_chat_event_t event, xz_chat_event_data_t *event_data, xz_chat_t* chat) {
 
@@ -123,9 +123,13 @@ static void afe_event_cb(esp_gmf_obj_handle_t obj, esp_gmf_afe_evt_t *event, voi
     switch (event->type) {
         case ESP_GMF_AFE_EVT_WAKEUP_START: {
             esp_gmf_afe_wakeup_info_t *info = event->event_data;
-            ESP_LOGI(TAG, "WAKEUP_START [%d : %d]", info->wake_word_index, info->wakenet_model_index);
-            audio_prompt_play(&prompt, "file://spiffs/dingding.wav");
-            xz_chat_new_session(chat);
+            ESP_LOGI(TAG, "WAKEUP_START [%d : %d]", info->wake_word_index, info->wakenet_model_index); 
+            if(!xz_chat_is_in_session(chat)) {
+                // the sound must be short
+                audio_prompt_play_to_end(&prompt, "file://spiffs/dingding.wav");
+                // start listening only AFTER ding sound has finished playing
+                xz_chat_new_session(chat);
+            }
             break;
         }
         case ESP_GMF_AFE_EVT_WAKEUP_END: 
@@ -328,16 +332,15 @@ static int prompt_out_data_callback(uint8_t *data, int data_size, void *ctx)
 
 static int prompt_event_callback(esp_asp_event_pkt_t *event, void *ctx)
 {
-    if (event->type == ESP_ASP_EVENT_TYPE_MUSIC_INFO) {
-        esp_asp_music_info_t info = {0};
-        memcpy(&info, event->payload, event->payload_size);
-        ESP_LOGI(TAG, "Get info, rate:%d, channels:%d, bits:%d", info.sample_rate, info.channels, info.bits);
-    } else if (event->type == ESP_ASP_EVENT_TYPE_STATE) {
+    if (event->type == ESP_ASP_EVENT_TYPE_STATE) {
         esp_asp_state_t st = 0;
         memcpy(&st, event->payload, event->payload_size);
-        ESP_LOGI(TAG, "Get State, %d,%s", st, esp_audio_simple_player_state_to_str(st));
-        if (((st == ESP_ASP_STATE_STOPPED) || (st == ESP_ASP_STATE_FINISHED) || (st == ESP_ASP_STATE_ERROR))) {
-            ((audio_prompt_t*)ctx)->state = AUDIO_RUN_STATE_IDLE;
+        if (((st == ESP_ASP_STATE_STOPPED) || (st == ESP_ASP_STATE_FINISHED))) {
+            audio_prompt_t* prompt = (audio_prompt_t*)ctx;
+            prompt->state = AUDIO_RUN_STATE_IDLE;
+
+        } else if(st == ESP_ASP_STATE_ERROR) {
+            ESP_LOGE(TAG, "get err state");
         }
     }
     return 0;
@@ -417,7 +420,7 @@ static esp_err_t audio_prompt_stop(audio_prompt_t* prompt)
     return ESP_OK;
 }
 
-static esp_err_t audio_prompt_play(audio_prompt_t* prompt, const char *url) {
+static esp_err_t audio_prompt_play_to_end(audio_prompt_t* prompt, const char *url) {
     if (!url) {
         ESP_LOGE(TAG, "Invalid URL for prompt playback");
         return ESP_FAIL;
@@ -432,12 +435,11 @@ static esp_err_t audio_prompt_play(audio_prompt_t* prompt, const char *url) {
         ESP_LOGW(TAG, "Audio prompt is already playing, stopping current playback");
         esp_audio_simple_player_stop(prompt->player);
     }
-    
+
     ESP_LOGI(TAG, "Starting prompt playback: %s", url);
-    esp_err_t err = esp_audio_simple_player_run(prompt->player, url, NULL);
-    ESP_GMF_RET_ON_NOT_OK(TAG, err, { return ESP_FAIL; }, "Failed to start prompt playback");
-    
     prompt->state = AUDIO_RUN_STATE_PLAYING;
+    esp_err_t err = esp_audio_simple_player_run_to_end(prompt->player, url, NULL);
+    ESP_GMF_RET_ON_NOT_OK(TAG, err, { return ESP_FAIL; }, "Failed to start prompt playback");
     return ESP_OK;
 }
 

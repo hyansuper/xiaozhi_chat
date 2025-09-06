@@ -495,3 +495,26 @@ void xz_chat_stop_manual_listening(xz_chat_t* chat) {
     CMD(chat, _stop_manual_listening, chat);
 }
 
+bool xz_chat_is_listening(xz_chat_t* chat) {
+    return chat_has_any_flag(chat, XZ_FLAG_SESS_LISTENING);
+}
+
+bool xz_chat_is_speaking(xz_chat_t* chat) {
+    return chat_has_any_flag(chat, XZ_FLAG_SESS_SPEAKING);
+}
+
+bool xz_chat_is_in_session(xz_chat_t* chat) {
+    return chat_has_any_flag(chat, XZ_FLAGS_IN_SESS);
+}
+
+void xz_chat_set_audio_cb(xz_chat_t* chat, xz_chat_audio_cb_t cb) {
+    chat->audio_cb = cb;
+}
+
+void xz_chat_set_event_cb(xz_chat_t* chat, xz_chat_event_cb_t cb) {
+    chat->event_cb = cb;
+}
+
+void xz_chat_set_read_audio_cb(xz_chat_t* chat, xz_chat_read_audio_cb_t cb) {
+    chat->read_audio_cb = cb;
+}

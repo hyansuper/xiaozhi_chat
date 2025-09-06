@@ -85,7 +85,7 @@ typedef struct {
     }, \
     .prot_pref = XZ_PROT_TYPE_MQTT, \
     .read_audio_task_conf = {.stack=4096,.prio=5,.caps=0,.core=tskNO_AFFINITY}, \
-    .main_task_conf = {.stack=4096,.prio=5,.caps=0,.core=tskNO_AFFINITY}, \
+    .main_task_conf = {.stack=4096,.prio=4,.caps=0,.core=tskNO_AFFINITY}, \
     .send_buf_size = 256, \
     .enable_realtime_listening = false, \
     .event_cb = on_event, \
@@ -124,3 +124,12 @@ xz_prot_type_t xz_chat_get_protocol_type(xz_chat_t* chat);
 
 void* xz_chat_get_user_data(xz_chat_t* chat);
 void xz_chat_set_user_data(xz_chat_t* chat, void* user_data);
+
+bool xz_chat_is_listening(xz_chat_t* chat);
+bool xz_chat_is_speaking(xz_chat_t* chat);
+bool xz_chat_is_in_session(xz_chat_t* chat);
+
+
+void xz_chat_set_audio_cb(xz_chat_t* chat, xz_chat_audio_cb_t cb);
+void xz_chat_set_event_cb(xz_chat_t* chat, xz_chat_event_cb_t cb);
+void xz_chat_set_read_audio_cb(xz_chat_t* chat, xz_chat_read_audio_cb_t cb);
