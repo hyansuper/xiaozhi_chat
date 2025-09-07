@@ -1,6 +1,6 @@
 #include "xz_chat.h"
 #include "board.h"
-
+#include "ext_mjson.h"
 #include "esp_gmf_oal_sys.h"
 #include "esp_gmf_oal_mem.h"
 #include "esp_gmf_element.h"
@@ -81,8 +81,29 @@ static void xz_chat_on_event(xz_chat_event_t event, xz_chat_event_data_t *event_
         }
 
     } else if(event==XZ_EVENT_STARTED) {
-        // xz_chat is started and ready to chat
-    } 
+
+    } else if(event==XZ_EVENT_JSON_RECEIVED) {
+        if(QESTREQL(event_data->type, "llm")) {
+            char* em;
+            if((em = emjson_find_string(event_data->json, event_data->len, "$.emotion"))) {
+                // change face img/gif accordingly
+                if(QESTREQL(em, "happy")) {
+                    
+                } else if(QESTREQL(em, "sad")) {
+
+                }
+            }
+        } else if(QESTREQL(event_data->type, "tts")) {
+            char* st;
+            if((st = emjson_find_string(event_data->json, event_data->len, "$.state"))) {
+                if(QESTREQL(st, "start")) {
+                    // speaking start
+                } else if(QESTREQL(st, "stop")) {
+                    // speaking end
+                }
+            }
+        }
+    }
 }
 
 static void xz_chat_on_audio(uint8_t *data, int len, xz_chat_t* chat) {
