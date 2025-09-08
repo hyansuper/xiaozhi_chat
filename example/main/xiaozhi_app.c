@@ -354,7 +354,7 @@ static int prompt_event_callback(esp_asp_event_pkt_t *event, void *ctx)
     if (event->type == ESP_ASP_EVENT_TYPE_STATE) {
         esp_asp_state_t st = 0;
         memcpy(&st, event->payload, event->payload_size);
-        if (((st == ESP_ASP_STATE_STOPPED) || (st == ESP_ASP_STATE_FINISHED))) {
+        if (((st == ESP_ASP_STATE_STOPPED) || (st == ESP_ASP_STATE_FINISHED) || (st == ESP_ASP_STATE_ERROR))) {
             audio_prompt_t* prompt = (audio_prompt_t*)ctx;
             prompt->state = AUDIO_RUN_STATE_IDLE;
 

@@ -12,6 +12,12 @@ config XZ_CHAT_ACTIVATION_CHECK_URL
     help
         The application will access this URL to check if device is activated.
 
+config XZ_CHAT_RUN_TASKS_IN_SPIRAM
+    bool "Use SPIRAM for all internal tasks"
+    default n
+    help
+        esp_mqtt_client and esp_websocket_client are not effected this option.
+
 config XZ_BOARD_TYPE_CUSTOM
     bool "Custom board type"
     default n

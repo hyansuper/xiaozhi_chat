@@ -30,7 +30,7 @@ void xz_mqtt_prot_config_set_default(xz_mqtt_prot_config_t* conf) {
     conf->udp_conf.task_conf = (capped_task_config_t){
             .prio = 5,
             .stack = 1024*3,
-            .caps = 0,
+            .caps = XZ_CHAT_TASK_CAPS,
             .core = tskNO_AFFINITY,
         };
     conf->client_conf = (esp_mqtt_client_config_t){

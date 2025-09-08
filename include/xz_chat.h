@@ -75,6 +75,11 @@ typedef struct {
     int send_audio_q_size;
 } xz_chat_config_t;
 
+#ifdef CONFIG_XZ_CHAT_RUN_TASKS_IN_SPIRAM
+#define XZ_CHAT_TASK_CAPS (MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT)
+#else
+#define XZ_CHAT_TASK_CAPS 0
+#endif
 #define XZ_CHAT_CONFIG_DEFAULT(read_audio, on_event, on_audio) { \
     .cmd_q_size = 8, \
     .send_audio_q_size = 36, \
@@ -84,8 +89,8 @@ typedef struct {
         .activation_check_url = CONFIG_XZ_CHAT_ACTIVATION_CHECK_URL, \
     }, \
     .prot_pref = XZ_PROT_TYPE_MQTT, \
-    .read_audio_task_conf = {.stack=4096,.prio=5,.caps=0,.core=tskNO_AFFINITY}, \
-    .main_task_conf = {.stack=4096,.prio=4,.caps=0,.core=tskNO_AFFINITY}, \
+    .read_audio_task_conf = {.stack=4096,.prio=5,.caps=XZ_CHAT_TASK_CAPS,.core=tskNO_AFFINITY}, \
+    .main_task_conf = {.stack=4096,.prio=4,.caps=XZ_CHAT_TASK_CAPS,.core=tskNO_AFFINITY}, \
     .send_buf_size = 256, \
     .enable_realtime_listening = false, \
     .event_cb = on_event, \
