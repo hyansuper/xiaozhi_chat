@@ -218,10 +218,6 @@ static void recorder_init_and_run(recorder_t* audio) {
     esp_gmf_port_handle_t out_port = NEW_ESP_GMF_PORT_OUT_BYTE(recorder_outport_acquire_write, recorder_outport_release_write, NULL, NULL, 4096, portMAX_DELAY);
     esp_gmf_pipeline_reg_el_port(audio->pipe, "aud_enc", ESP_GMF_IO_DIR_WRITER, out_port);
 
-	/*
-		以下参数设置其实可以直接在 menuconfig 里设置好，这里重新设置会覆盖 menuconfig 的默认设置。
-	*/
-
     // 因为小智接收到的是24K的采样率，而 es8311 输入和输出要设置相同的采样率, 因此选择 24K。
     // 但 唤醒检测的 ai_afe 接受16K 的采样率，因此要将麦克风的24K转为16K在给 ai_afe，最终发给小智服务器的是 16K
     esp_gmf_info_sound_t info = {
@@ -231,8 +227,10 @@ static void recorder_init_and_run(recorder_t* audio) {
     };
     esp_gmf_pipeline_report_info(audio->pipe, ESP_GMF_INFO_SOUND, &info, sizeof(info));
 
-
     esp_gmf_element_handle_t el;
+    esp_gmf_pipeline_get_el_by_name(audio->pipe, "aud_rate_cvt", &el);
+    esp_gmf_rate_cvt_set_dest_rate(el, 16000);
+
     esp_gmf_pipeline_get_el_by_name(audio->pipe, "ai_afe", &el);
     esp_gmf_afe_set_event_cb(el, afe_event_cb, NULL);
 
