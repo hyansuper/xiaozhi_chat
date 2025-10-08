@@ -54,7 +54,7 @@ static recorder_t recorder;
 static playback_t playback;
 static xz_chat_t* chat;
 
-static esp_err_t audio_prompt_play_to_end(audio_prompt_t* prompt, const char *url);
+static esp_err_t audio_prompt_play(audio_prompt_t* prompt, const char *url);
 
 static void xz_chat_on_event(xz_chat_event_t event, xz_chat_event_data_t *event_data, xz_chat_t* chat) {
 
@@ -147,7 +147,7 @@ static void afe_event_cb(esp_gmf_obj_handle_t obj, esp_gmf_afe_evt_t *event, voi
             ESP_LOGI(TAG, "WAKEUP_START [%d : %d]", info->wake_word_index, info->wakenet_model_index); 
             if(!xz_chat_is_in_session(chat)) {
                 // the sound must be short
-                audio_prompt_play_to_end(&prompt, "file://spiffs/dingding.wav");
+                audio_prompt_play(&prompt, "file://spiffs/dingding.wav");
                 // start listening only AFTER ding sound has finished playing
                 xz_chat_new_session(chat);
             }
@@ -439,7 +439,7 @@ static esp_err_t audio_prompt_stop(audio_prompt_t* prompt)
     return ESP_OK;
 }
 
-static esp_err_t audio_prompt_play_to_end(audio_prompt_t* prompt, const char *url) {
+static esp_err_t audio_prompt_play(audio_prompt_t* prompt, const char *url) {
     if (!url) {
         ESP_LOGE(TAG, "Invalid URL for prompt playback");
         return ESP_FAIL;
@@ -457,7 +457,7 @@ static esp_err_t audio_prompt_play_to_end(audio_prompt_t* prompt, const char *ur
 
     ESP_LOGI(TAG, "Starting prompt playback: %s", url);
     prompt->state = AUDIO_RUN_STATE_PLAYING;
-    esp_err_t err = esp_audio_simple_player_run_to_end(prompt->player, url, NULL);
+    esp_err_t err = esp_audio_simple_player_run(prompt->player, url, NULL);
     ESP_GMF_RET_ON_NOT_OK(TAG, err, { return ESP_FAIL; }, "Failed to start prompt playback");
     return ESP_OK;
 }

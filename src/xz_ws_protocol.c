@@ -171,12 +171,12 @@ static void websocket_event_handler(xz_chat_t *chat, esp_event_base_t base, int3
                 int len = ev->data_len;
                 char* data = ev->data_ptr;
                 ESP_LOGI(TAG, "got msg %.*s", len, data);
-                const char* s; int n;
-                if(!emjson_locate_string(data, len, "$.type", &s, &n)) {
+                const char* s, *type; int n, type_len;
+                if(!emjson_locate_string(data, len, "$.type", &type, &type_len)) {
                     ESP_LOGE(TAG, "Message type is not specified");
                     return;
                 }
-                if(QESTREQL(s, "hello")) {
+                if(QESTREQL(type, "hello")) {
                     if(!(emjson_locate_string(data, len, "$.transport", &s, &n) && QESTREQL(s, "websocket"))) {
                         ESP_LOGE(TAG, "Unsupported transport");
                         return;
@@ -192,9 +192,8 @@ static void websocket_event_handler(xz_chat_t *chat, esp_event_base_t base, int3
                         chat->session_id[n] = 0;
                     }
                     xEventGroupSetBits(chat->eg, XZ_EG_SERVER_HELLO_BIT);
-                } else {
-                    xz_prot_process_json(chat, data, len, s, n);
-                }
+                } 
+                xz_prot_process_json(chat, data, len, type, type_len);
             }
         }
 

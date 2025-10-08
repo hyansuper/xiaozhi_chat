@@ -231,14 +231,15 @@ static void mqtt_event_handler(xz_chat_t* chat, esp_event_base_t base, int32_t e
         }
         char* data = event->data;
         int len = event->total_data_len;
-        const char* s; int n;
+        const char* type; int type_len;
         ESP_LOGI(TAG, "got: %.*s", len, data);
-        if(!emjson_locate_string(data, len, "$.type", &s, &n)) {
+        if(!emjson_locate_string(data, len, "$.type", &type, &type_len)) {
             ESP_LOGE(TAG, "Message type is not specified");
             // goto process_recv_data_end;
             return;
         }
-        if(QESTREQL(s, "hello")) {
+        char* s; int n;
+        if(QESTREQL(type, "hello")) {
             if(!(emjson_locate_string(data, len, "$.transport", &s, &n) && QESTREQL(s, "udp"))) {
                 ESP_LOGE(TAG, "Unsupported transport");
                 // goto process_recv_data_end;
@@ -276,16 +277,15 @@ static void mqtt_event_handler(xz_chat_t* chat, esp_event_base_t base, int32_t e
             ctx->udp.remote_sequence = 0;
             xEventGroupSetBits(chat->eg, XZ_EG_SERVER_HELLO_BIT);
 
-        } else if(QESTREQL(s, "goodbye")) {
+        } else if(QESTREQL(type, "goodbye")) {
             if(emjson_locate_string(data, len, "$.session_id", &s, &n) && strncmp(chat->session_id, s, n)) {
 
             } else {
                 RELEASE(chat->session_buf); // close audo chan by server, release session buf so client won't send goodbye to server again
                 xz_chat_exit_session(chat);
             }
-        } else {
-            xz_prot_process_json(chat, data, len, s, n);
         }
+        xz_prot_process_json(chat, data, len, type, type_len);
         return;
     }
     // case MQTT_EVENT_BEFORE_CONNECT:
